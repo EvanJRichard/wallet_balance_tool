@@ -100,21 +100,10 @@ impl WalletBalanceApp {
 
     fn calculate_address_range(&self) -> (usize, usize) {
         let start = self.current_page * self.addresses_per_page;
-        let mut end = start + self.addresses_per_page;
-
-        let total_external = 46;
-        let total_change = 12;
-
-        if start >= total_external + total_change {
-            return (0, 0);
-        }
-
-        if end > total_external + total_change {
-            end = total_external + total_change;
-        }
-
+        let end = start + self.addresses_per_page;
         (start, end)
     }
+
 }
 
 impl Application for WalletBalanceApp {
@@ -131,7 +120,7 @@ impl Application for WalletBalanceApp {
         String::from("Bitcoin Wallet Balance Discovery Tool")
     }
 
-    fn update(&mut self, message: Message) -> Command<Message> {
+ fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::XpubInputChanged(value) => {
                 self.xpub_input = value;
@@ -175,8 +164,7 @@ impl Application for WalletBalanceApp {
                     Ok(mut new_balances) => {
                         self.total_addresses_checked += new_balances.len();
                         self.balances.append(&mut new_balances);
-                        let (_, end) = self.calculate_address_range();
-                        self.has_more = end > 0;
+                        self.has_more = true;  // Always allow loading more addresses
                     }
                     Err(e) => {
                         self.error = Some(format!("Error (showing partial results): {}", e));
@@ -252,7 +240,7 @@ fn view(&self) -> Element<Message> {
         .spacing(10)
         .padding(5);
 
-        // Scrollable balance list
+        // Scrollable balance list with reduced height
         let balances_list = self.balances.iter().fold(
             column![header_row].spacing(2),
             |col, balance| {
@@ -275,7 +263,7 @@ fn view(&self) -> Element<Message> {
         );
 
         let scrollable_content = scrollable(balances_list)
-            .height(Length::Fixed(300.0))
+            .height(Length::Fixed(250.0))  // Reduced from 300.0 to make room for Load More button
             .width(Length::Fill);
 
         let summary = column![
@@ -285,28 +273,27 @@ fn view(&self) -> Element<Message> {
                 .size(16)
                 .style(theme::Text::Color(iced::Color::from_rgb(0.0, 0.5, 0.0)))
         ]
-        .spacing(10)
-        .padding(10);
+        .spacing(5)  // Reduced spacing
+        .padding(5); // Reduced padding
 
         content = content
             .push(scrollable_content)
             .push(summary);
 
-        if self.has_more && !self.loading {
-            content = content.push(
-                button("Load More Addresses")
-                    .on_press(Message::LoadMore)
-                    .padding(10)
-                    .style(theme::Button::Secondary)
-            );
-        }
+        // Add Load More button with less spacing
+        content = content.push(
+            button("Load More Addresses")
+                .on_press(Message::LoadMore)
+                .padding(5)
+                .style(theme::Button::Secondary)
+        );
     }
 
     container(content)
         .width(Length::Fill)
         .height(Length::Fill)
         .center_x()
-        .padding(20)
+        .padding(10)  // Reduced padding
         .into()
     }
 }
@@ -358,52 +345,37 @@ async fn check_balances(xpub: &str, start_idx: usize, end_idx: usize) -> Result<
         return Err("Unsupported extended public key format. Must start with 'xpub' or 'vpub'".to_string());
     };
 
-    println!("Using key: {}", xpub_to_use);
-
     let extended_pubkey = ExtendedPubKey::from_str(&xpub_to_use)
         .map_err(|e| format!("Invalid extended public key: {}", e))?;
 
     let secp = Secp256k1::new();
     let mut balances = Vec::new();
     
-    // Calculate ranges for this batch
-    let start_external = start_idx / 2;
-    let end_external = (end_idx + 1) / 2;
-    let start_change = start_idx / 2;
-    let end_change = end_idx / 2;
+    // Simpler range calculation - we'll do 10 external and 1 change address per page
+    let start_external = start_idx;
+    let end_external = end_idx;
+    let change_idx = start_idx / 10; // One change address per 10 external addresses
 
-    println!("Checking external addresses {}-{} and change addresses {}-{}", 
-             start_external, end_external, start_change, end_change);
+    println!("Checking external addresses {}-{} and change address {}", 
+             start_external, end_external, change_idx);
 
-    // Check both paths interleaved
-    for i in 0..end_idx.saturating_sub(start_idx) {
-        // Alternate between external and change addresses
-        let (account, index) = if i % 2 == 0 {
-            let external_idx = start_external + (i / 2);
-            if external_idx >= 46 { continue; } // Skip if beyond external range
-            (0_u32, external_idx as u32)
-        } else {
-            let change_idx = start_change + (i / 2);
-            if change_idx >= 12 { continue; } // Skip if beyond change range
-            (1_u32, change_idx as u32)
-        };
-
+    // First check external addresses
+    for i in start_external..end_external {
         let child_numbers = [
-            ChildNumber::from_normal_idx(account)
+            ChildNumber::from_normal_idx(0)
                 .map_err(|e| format!("Invalid account number: {}", e))?,
-            ChildNumber::from_normal_idx(index)
+            ChildNumber::from_normal_idx(i as u32)
                 .map_err(|e| format!("Invalid index: {}", e))?,
         ];
         
         let path = DerivationPath::from(child_numbers.as_ref());
-        println!("Deriving path: m/{}/{}", account, index);
+        println!("Deriving path: m/0/{}", i);
         
         let derived_pubkey = extended_pubkey
             .derive_pub(&secp, &path)
             .map_err(|e| format!("Derivation error: {}", e))?;
         
         let public_key = PublicKey::new(derived_pubkey.public_key);
-        
         let address = Address::p2wpkh(&public_key, network)
             .map_err(|e| format!("Address generation error: {}", e))?;
 
@@ -412,22 +384,60 @@ async fn check_balances(xpub: &str, start_idx: usize, end_idx: usize) -> Result<
         let balance = match get_testnet_address_balance(&address.to_string()).await {
             Ok(bal) => bal,
             Err(e) if e.contains("rate limit") || e.contains("exceeded") => {
-                // Return what we have so far if we hit rate limits
                 return Ok(balances);
             }
             Err(e) => return Err(e),
         };
 
         if balance > 0.0 {
-            println!("Found balance of {} BTC at m/{}/{}: {}", balance, account, index, address);
+            println!("Found balance of {} BTC at m/0/{}: {}", balance, i, address);
         }
         
         balances.push(AddressBalance {
             address: address.to_string(),
             balance,
-            derivation_path: format!("m/{}/{}", account, index),
+            derivation_path: format!("m/0/{}", i),
         });
     }
+
+    // Then check one change address
+    let child_numbers = [
+        ChildNumber::from_normal_idx(1)
+            .map_err(|e| format!("Invalid account number: {}", e))?,
+        ChildNumber::from_normal_idx(change_idx as u32)
+            .map_err(|e| format!("Invalid index: {}", e))?,
+    ];
+    
+    let path = DerivationPath::from(child_numbers.as_ref());
+    println!("Deriving change path: m/1/{}", change_idx);
+    
+    let derived_pubkey = extended_pubkey
+        .derive_pub(&secp, &path)
+        .map_err(|e| format!("Derivation error: {}", e))?;
+    
+    let public_key = PublicKey::new(derived_pubkey.public_key);
+    let address = Address::p2wpkh(&public_key, network)
+        .map_err(|e| format!("Address generation error: {}", e))?;
+
+    enforce_rate_limit().await;
+
+    let balance = match get_testnet_address_balance(&address.to_string()).await {
+        Ok(bal) => bal,
+        Err(e) if e.contains("rate limit") || e.contains("exceeded") => {
+            return Ok(balances);
+        }
+        Err(e) => return Err(e),
+    };
+
+    if balance > 0.0 {
+        println!("Found balance of {} BTC at m/1/{}: {}", balance, change_idx, address);
+    }
+    
+    balances.push(AddressBalance {
+        address: address.to_string(),
+        balance,
+        derivation_path: format!("m/1/{}", change_idx),
+    });
 
     Ok(balances)
 }
