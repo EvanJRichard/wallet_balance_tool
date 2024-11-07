@@ -1,32 +1,56 @@
 use iced::{
-    widget::{button, column, container, row, text, text_input},
+    widget::{button, column, container, row, text, text_input, progress_bar, scrollable, Container},
     Application, Command, Element, Length, Settings, Theme,
-    executor,
+    executor, Executor,
+    alignment, theme,
 };
 use bitcoin::{
-    bip32::{ExtendedPubKey, DerivationPath},
+    bip32::{ExtendedPubKey, DerivationPath, ChildNumber},
     secp256k1::Secp256k1,
     Address, Network, PublicKey,
     base58,
     hashes::{sha256, Hash},
 };
 use std::{str::FromStr, future::Future};
+use std::sync::atomic::AtomicU64;
+use std::sync::Arc;
+use std::time::{Duration, Instant};
+use tokio::time::sleep;
+use tokio::runtime::Runtime;
+use tokio::runtime::Handle;
+use parking_lot::Mutex;
 
-// Custom executor for Tokio
+static LAST_REQUEST: AtomicU64 = AtomicU64::new(0);
+const MIN_REQUEST_INTERVAL: Duration = Duration::from_millis(250);
+
 #[derive(Debug)]
 struct TokenExecutor {
-    runtime: tokio::runtime::Runtime,
+    runtime: Arc<Runtime>,
+}
+
+impl Clone for TokenExecutor {
+    fn clone(&self) -> Self {
+        Self {
+            runtime: Arc::clone(&self.runtime)
+        }
+    }
 }
 
 impl executor::Executor for TokenExecutor {
     fn new() -> Result<Self, std::io::Error> {
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .thread_name("iced-runtime")
+            .build()?;
+
         Ok(Self {
-            runtime: tokio::runtime::Runtime::new()?
+            runtime: Arc::new(runtime)
         })
     }
 
     fn spawn(&self, future: impl Future<Output = ()> + Send + 'static) {
-        self.runtime.spawn(future);
+        let runtime_handle = self.runtime.handle().clone();
+        runtime_handle.spawn(future);
     }
 }
 
@@ -34,6 +58,7 @@ impl executor::Executor for TokenExecutor {
 enum Message {
     XpubInputChanged(String),
     CheckBalance,
+    LoadMore,
     BalanceResult(Result<Vec<AddressBalance>, String>),
 }
 
@@ -49,6 +74,47 @@ struct WalletBalanceApp {
     balances: Vec<AddressBalance>,
     error: Option<String>,
     loading: bool,
+    current_page: usize,
+    addresses_per_page: usize,
+    has_more: bool,
+    total_addresses_checked: usize,
+    executor: TokenExecutor,
+}
+
+impl WalletBalanceApp {
+    fn new() -> Result<Self, std::io::Error> {
+        let executor = TokenExecutor::new()?;
+        
+        Ok(Self {
+            xpub_input: String::new(),
+            balances: Vec::new(),
+            error: None,
+            loading: false,
+            current_page: 0,
+            addresses_per_page: 10,
+            has_more: true,
+            total_addresses_checked: 0,
+            executor,
+        })
+    }
+
+    fn calculate_address_range(&self) -> (usize, usize) {
+        let start = self.current_page * self.addresses_per_page;
+        let mut end = start + self.addresses_per_page;
+
+        let total_external = 46;
+        let total_change = 12;
+
+        if start >= total_external + total_change {
+            return (0, 0);
+        }
+
+        if end > total_external + total_change {
+            end = total_external + total_change;
+        }
+
+        (start, end)
+    }
 }
 
 impl Application for WalletBalanceApp {
@@ -58,15 +124,7 @@ impl Application for WalletBalanceApp {
     type Flags = ();
 
     fn new(_flags: ()) -> (Self, Command<Message>) {
-        (
-            Self {
-                xpub_input: String::new(),
-                balances: Vec::new(),
-                error: None,
-                loading: false,
-            },
-            Command::none(),
-        )
+        (WalletBalanceApp::new().expect("Failed to create application"), Command::none())
     }
 
     fn title(&self) -> String {
@@ -77,26 +135,51 @@ impl Application for WalletBalanceApp {
         match message {
             Message::XpubInputChanged(value) => {
                 self.xpub_input = value;
+                self.current_page = 0;
+                self.balances.clear();
+                self.has_more = true;
+                self.total_addresses_checked = 0;
                 Command::none()
             }
             Message::CheckBalance => {
                 self.loading = true;
                 self.error = None;
+                self.current_page = 0;
+                self.balances.clear();
+                self.has_more = true;
+                self.total_addresses_checked = 0;
                 let xpub = self.xpub_input.clone();
+                let range = self.calculate_address_range();
                 Command::perform(
-                    async move { check_balances(&xpub).await },
+                    async move { check_balances(&xpub, range.0, range.1).await },
                     Message::BalanceResult,
                 )
+            }
+            Message::LoadMore => {
+                if !self.loading && self.has_more {
+                    self.loading = true;
+                    self.current_page += 1;
+                    let xpub = self.xpub_input.clone();
+                    let range = self.calculate_address_range();
+                    Command::perform(
+                        async move { check_balances(&xpub, range.0, range.1).await },
+                        Message::BalanceResult,
+                    )
+                } else {
+                    Command::none()
+                }
             }
             Message::BalanceResult(result) => {
                 self.loading = false;
                 match result {
-                    Ok(balances) => {
-                        self.balances = balances;
-                        self.error = None;
+                    Ok(mut new_balances) => {
+                        self.total_addresses_checked += new_balances.len();
+                        self.balances.append(&mut new_balances);
+                        let (_, end) = self.calculate_address_range();
+                        self.has_more = end > 0;
                     }
                     Err(e) => {
-                        self.error = Some(e);
+                        self.error = Some(format!("Error (showing partial results): {}", e));
                     }
                 }
                 Command::none()
@@ -104,65 +187,143 @@ impl Application for WalletBalanceApp {
         }
     }
 
-    fn view(&self) -> Element<Message> {
-        let input = text_input("Enter extended public key (xpub)", &self.xpub_input)
-            .on_input(Message::XpubInputChanged)
+fn view(&self) -> Element<Message> {
+    let title = text("Bitcoin Wallet Balance Discovery Tool")
+        .size(24)
+        .width(Length::Fill)
+        .horizontal_alignment(alignment::Horizontal::Center);
+
+    let input = text_input("Enter extended public key (xpub/vpub)", &self.xpub_input)
+        .on_input(Message::XpubInputChanged)
+        .padding(10)
+        .size(16);
+
+    let check_button = button("Check Balance")
+        .on_press(Message::CheckBalance)
+        .padding(10)
+        .style(theme::Button::Primary);
+
+    let mut content = column![
+        title,
+        input,
+        check_button,
+    ]
+    .spacing(15)
+    .padding(20)
+    .width(Length::Fill)
+    .align_items(alignment::Alignment::Center);
+
+    if self.loading {
+        content = content.push(
+            column![
+                text(format!(
+                    "Loading addresses {}-{}...", 
+                    self.total_addresses_checked,
+                    self.total_addresses_checked + self.addresses_per_page
+                ))
+                .size(14),
+                progress_bar(0.0..=100.0, 50.0)
+                    .width(Length::Fixed(300.0))
+            ]
+            .spacing(10)
             .padding(10)
-            .size(20);
+        );
+    }
 
-        let check_button = button("Check Balance")
-            .on_press(Message::CheckBalance)
-            .padding(10);
+    if let Some(error) = &self.error {
+        content = content.push(
+            text(error)
+                .size(14)
+                .style(iced::Color::from_rgb(0.8, 0.0, 0.0))
+                .width(Length::Fill)
+                .horizontal_alignment(alignment::Horizontal::Center)
+        );
+    }
 
-        let mut content = column![
-            text("Bitcoin Wallet Balance Discovery Tool").size(28),
-            input,
-            check_button,
+    if !self.balances.is_empty() {
+        let total: f64 = self.balances.iter().map(|b| b.balance).sum();
+        
+        // Header row
+        let header_row = row![
+            text("Path").size(14).width(Length::FillPortion(2)),
+            text("Address").size(14).width(Length::FillPortion(5)),
+            text("Balance (BTC)").size(14).width(Length::FillPortion(2)),
         ]
-        .spacing(20)
-        .padding(20);
+        .spacing(10)
+        .padding(5);
 
-        if self.loading {
-            content = content.push(text("Loading...").size(20));
-        }
+        // Scrollable balance list
+        let balances_list = self.balances.iter().fold(
+            column![header_row].spacing(2),
+            |col, balance| {
+                col.push(
+                    row![
+                        text(&balance.derivation_path)
+                            .size(12)
+                            .width(Length::FillPortion(2)),
+                        text(&balance.address)
+                            .size(12)
+                            .width(Length::FillPortion(5)),
+                        text(format!("{:.8} BTC", balance.balance))
+                            .size(12)
+                            .width(Length::FillPortion(2)),
+                    ]
+                    .spacing(10)
+                    .padding(5)
+                )
+            },
+        );
 
-        if let Some(error) = &self.error {
-            content = content.push(text(error).size(20).style(iced::Color::from_rgb(1.0, 0.0, 0.0)));
-        }
+        let scrollable_content = scrollable(balances_list)
+            .height(Length::Fixed(300.0))
+            .width(Length::Fill);
 
-        if !self.balances.is_empty() {
-            let total: f64 = self.balances.iter().map(|b| b.balance).sum();
-            
-            let balances_list = self.balances.iter().fold(
-                column![].spacing(10),
-                |col, balance| {
-                    col.push(
-                        row![
-                            text(&balance.derivation_path).width(Length::FillPortion(2)),
-                            text(&balance.address).width(Length::FillPortion(5)),
-                            text(format!("{} BTC", balance.balance)).width(Length::FillPortion(2)),
-                        ]
-                        .spacing(20)
-                    )
-                },
+        let summary = column![
+            text(format!("Addresses checked: {}", self.total_addresses_checked))
+                .size(14),
+            text(format!("Total Balance: {:.8} BTC", total))
+                .size(16)
+                .style(theme::Text::Color(iced::Color::from_rgb(0.0, 0.5, 0.0)))
+        ]
+        .spacing(10)
+        .padding(10);
+
+        content = content
+            .push(scrollable_content)
+            .push(summary);
+
+        if self.has_more && !self.loading {
+            content = content.push(
+                button("Load More Addresses")
+                    .on_press(Message::LoadMore)
+                    .padding(10)
+                    .style(theme::Button::Secondary)
             );
-
-            content = content
-                .push(text("Balances:").size(24))
-                .push(balances_list)
-                .push(text(format!("Total Balance: {} BTC", total)).size(24));
         }
+    }
 
-        container(content)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .center_x()
-            .center_y()
-            .into()
+    container(content)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x()
+        .padding(20)
+        .into()
     }
 }
 
-async fn check_balances(xpub: &str) -> Result<Vec<AddressBalance>, String> {
+async fn enforce_rate_limit() {
+    let last = LAST_REQUEST.load(std::sync::atomic::Ordering::Relaxed);
+    let now = Instant::now().elapsed().as_millis() as u64;
+    let elapsed = now.saturating_sub(last);
+    
+    if elapsed < MIN_REQUEST_INTERVAL.as_millis() as u64 {
+        sleep(Duration::from_millis(MIN_REQUEST_INTERVAL.as_millis() as u64 - elapsed)).await;
+    }
+    
+    LAST_REQUEST.store(now, std::sync::atomic::Ordering::Relaxed);
+}
+
+async fn check_balances(xpub: &str, start_idx: usize, end_idx: usize) -> Result<Vec<AddressBalance>, String> {
     // Determine network and handle version bytes
     let (network, xpub_to_use) = if xpub.starts_with("vpub") {
         let decoded = base58::decode(xpub)
@@ -205,91 +366,75 @@ async fn check_balances(xpub: &str) -> Result<Vec<AddressBalance>, String> {
     let secp = Secp256k1::new();
     let mut balances = Vec::new();
     
-    // Check both external and change addresses
-    for account in 0..2 {
-        // Determine how many addresses to check based on account
-        let max_index = if account == 0 { 46 } else { 12 };
+    // Calculate ranges for this batch
+    let start_external = start_idx / 2;
+    let end_external = (end_idx + 1) / 2;
+    let start_change = start_idx / 2;
+    let end_change = end_idx / 2;
+
+    println!("Checking external addresses {}-{} and change addresses {}-{}", 
+             start_external, end_external, start_change, end_change);
+
+    // Check both paths interleaved
+    for i in 0..end_idx.saturating_sub(start_idx) {
+        // Alternate between external and change addresses
+        let (account, index) = if i % 2 == 0 {
+            let external_idx = start_external + (i / 2);
+            if external_idx >= 46 { continue; } // Skip if beyond external range
+            (0_u32, external_idx as u32)
+        } else {
+            let change_idx = start_change + (i / 2);
+            if change_idx >= 12 { continue; } // Skip if beyond change range
+            (1_u32, change_idx as u32)
+        };
+
+        let child_numbers = [
+            ChildNumber::from_normal_idx(account)
+                .map_err(|e| format!("Invalid account number: {}", e))?,
+            ChildNumber::from_normal_idx(index)
+                .map_err(|e| format!("Invalid index: {}", e))?,
+        ];
         
-        for index in 0..max_index {
-            // Create child number sequence directly
-            let child_numbers = [
-                bitcoin::bip32::ChildNumber::from_normal_idx(account)
-                    .map_err(|e| format!("Invalid account number: {}", e))?,
-                bitcoin::bip32::ChildNumber::from_normal_idx(index)
-                    .map_err(|e| format!("Invalid index: {}", e))?,
-            ];
-            
-            let path = DerivationPath::from(child_numbers.as_ref());
-            println!("Deriving path: m/{}/{}", account, index);
-            
-            let derived_pubkey = extended_pubkey
-                .derive_pub(&secp, &path)
-                .map_err(|e| format!("Derivation error: {}", e))?;
-            
-            let public_key = PublicKey::new(derived_pubkey.public_key);
-            
-            // Generate native SegWit address (P2WPKH)
-            let address = Address::p2wpkh(&public_key, network)
-                .map_err(|e| format!("Address generation error: {}", e))?;
+        let path = DerivationPath::from(child_numbers.as_ref());
+        println!("Deriving path: m/{}/{}", account, index);
+        
+        let derived_pubkey = extended_pubkey
+            .derive_pub(&secp, &path)
+            .map_err(|e| format!("Derivation error: {}", e))?;
+        
+        let public_key = PublicKey::new(derived_pubkey.public_key);
+        
+        let address = Address::p2wpkh(&public_key, network)
+            .map_err(|e| format!("Address generation error: {}", e))?;
 
-            println!("Generated address for m/{}/{}: {}", account, index, address);
-            
-            let balance = if network == Network::Testnet {
-                get_testnet_address_balance(&address.to_string()).await?
-            } else {
-                get_address_balance(&address.to_string()).await?
-            };
+        enforce_rate_limit().await;
 
-            if balance > 0.0 {
-                println!("Found balance of {} BTC at {}", balance, address);
+        let balance = match get_testnet_address_balance(&address.to_string()).await {
+            Ok(bal) => bal,
+            Err(e) if e.contains("rate limit") || e.contains("exceeded") => {
+                // Return what we have so far if we hit rate limits
+                return Ok(balances);
             }
-            
-            balances.push(AddressBalance {
-                address: address.to_string(),
-                balance,
-                derivation_path: format!("m/{}/{}", account, index),
-            });
+            Err(e) => return Err(e),
+        };
+
+        if balance > 0.0 {
+            println!("Found balance of {} BTC at m/{}/{}: {}", balance, account, index, address);
         }
+        
+        balances.push(AddressBalance {
+            address: address.to_string(),
+            balance,
+            derivation_path: format!("m/{}/{}", account, index),
+        });
     }
 
     Ok(balances)
 }
 
-// ... [Previous code remains same until balance checking functions] ...
-
 async fn get_testnet_address_balance(address: &str) -> Result<f64, String> {
-    // Try multiple API endpoints with retry logic
-    for attempt in 0..3 {
-        if attempt > 0 {
-            // Exponential backoff: 2s, 4s, 8s
-            let delay = 2u64.pow(attempt as u32);
-            println!("Rate limit hit, waiting {} seconds before retry...", delay);
-            tokio::time::sleep(tokio::time::Duration::from_secs(delay)).await;
-        }
-
-        // Alternate between different API endpoints
-        let result = match attempt % 2 {
-            0 => get_balance_from_blockstream(address).await,
-            1 => get_balance_from_mempool(address).await,
-            _ => unreachable!(),
-        };
-
-        match result {
-            Ok(balance) => return Ok(balance),
-            Err(e) if e.contains("rate limit") || e.contains("exceeded") => {
-                println!("Rate limit error, will retry: {}", e);
-                continue;
-            },
-            Err(e) => return Err(e),
-        }
-    }
-
-    Err("All API attempts failed".to_string())
-}
-
-async fn get_balance_from_blockstream(address: &str) -> Result<f64, String> {
     let url = format!("https://blockstream.info/testnet/api/address/{}", address);
-    println!("Checking balance via Blockstream for address: {}", address);
+    println!("Checking balance for address: {} at URL: {}", address, url);
     
     let response = reqwest::get(&url)
         .await
@@ -298,7 +443,7 @@ async fn get_balance_from_blockstream(address: &str) -> Result<f64, String> {
     if !response.status().is_success() {
         return Err(format!("API error: {}", response.status()));
     }
-    
+
     let text = response
         .text()
         .await
@@ -322,55 +467,9 @@ async fn get_balance_from_blockstream(address: &str) -> Result<f64, String> {
     Ok(balance_satoshis as f64 / 100_000_000.0)
 }
 
-async fn get_balance_from_mempool(address: &str) -> Result<f64, String> {
-    let url = format!("https://mempool.space/testnet/api/address/{}", address);
-    println!("Checking balance via Mempool.space for address: {}", address);
-    
-    let response = reqwest::get(&url)
-        .await
-        .map_err(|e| format!("API request failed: {}", e))?;
-    
-    if !response.status().is_success() {
-        return Err(format!("API error: {}", response.status()));
-    }
-
-    let data: serde_json::Value = response
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse API response: {}", e))?;
-    
-    // Mempool.space returns the balance directly
-    let balance_satoshis = data["chain_stats"]["funded_txo_sum"]
-        .as_u64()
-        .unwrap_or(0)
-        .saturating_sub(
-            data["chain_stats"]["spent_txo_sum"]
-                .as_u64()
-                .unwrap_or(0)
-        );
-    
-    Ok(balance_satoshis as f64 / 100_000_000.0)
-}
-
-async fn get_address_balance(address: &str) -> Result<f64, String> {
-    let url = format!("https://blockchain.info/rawaddr/{}", address);
-    
-    let response = reqwest::get(&url)
-        .await
-        .map_err(|e| format!("API request failed: {}", e))?;
-    
-    let data: serde_json::Value = response
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse API response: {}", e))?;
-    
-    let balance_satoshis = data["final_balance"]
-        .as_u64()
-        .ok_or_else(|| "Invalid balance format".to_string())?;
-    
-    Ok(balance_satoshis as f64 / 100_000_000.0)
-}
-
 fn main() -> iced::Result {
-    WalletBalanceApp::run(Settings::default())
+    let mut settings = Settings::default();
+    settings.window.resizable = false;  // Disable resizing, I think I'm using tokio wrong and causing a crash on resize
+    settings.window.size = (800, 600);  // Set a reasonable fixed window size
+    WalletBalanceApp::run(settings)
 }
