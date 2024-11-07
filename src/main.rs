@@ -30,7 +30,6 @@ impl executor::Executor for TokenExecutor {
     }
 }
 
-
 #[derive(Debug, Clone)]
 enum Message {
     XpubInputChanged(String),
@@ -169,7 +168,7 @@ async fn check_balances(xpub: &str) -> Result<Vec<AddressBalance>, String> {
         let decoded = base58::decode(xpub)
             .map_err(|e| format!("Failed to decode vpub: {}", e))?;
         
-        if decoded.len() < 78 {  // Extended keys should be 78 bytes
+        if decoded.len() < 78 {
             return Err("Invalid extended public key length".to_string());
         }
 
@@ -189,7 +188,7 @@ async fn check_balances(xpub: &str) -> Result<Vec<AddressBalance>, String> {
         modified.extend_from_slice(&hash2[0..4]);
         
         let tpub = base58::encode(&modified);
-        println!("Converted vpub to tpub: {}", tpub); // Debug output
+        println!("Converted vpub to tpub: {}", tpub);
         
         (Network::Testnet, tpub)
     } else if xpub.starts_with("xpub") {
@@ -206,66 +205,111 @@ async fn check_balances(xpub: &str) -> Result<Vec<AddressBalance>, String> {
     let secp = Secp256k1::new();
     let mut balances = Vec::new();
     
-    // For testnet, we use m/0/0/i derivation path (account/change/index)
-    let base_path = if network == Network::Testnet {
-        "m/0/0" // account 0, external chain
-    } else {
-        "m/0" // simpler path for mainnet
-    };
-    
-    // Derive addresses
-    for i in 0..20 { // this could be configurable in a future version
-        let path = DerivationPath::from_str(&format!("{}/{}", base_path, i))
-            .map_err(|e| format!("Invalid derivation path: {}", e))?;
+    // Check both external and change addresses
+    for account in 0..2 {
+        // Determine how many addresses to check based on account
+        let max_index = if account == 0 { 46 } else { 12 };
         
-        let derived_pubkey = extended_pubkey
-            .derive_pub(&secp, &path)
-            .map_err(|e| format!("Derivation error: {}", e))?;
-        
-        let public_key = PublicKey::new(derived_pubkey.public_key);
-        
-        let address = Address::p2pkh(
-            &public_key,
-            network,
-        );
+        for index in 0..max_index {
+            // Create child number sequence directly
+            let child_numbers = [
+                bitcoin::bip32::ChildNumber::from_normal_idx(account)
+                    .map_err(|e| format!("Invalid account number: {}", e))?,
+                bitcoin::bip32::ChildNumber::from_normal_idx(index)
+                    .map_err(|e| format!("Invalid index: {}", e))?,
+            ];
+            
+            let path = DerivationPath::from(child_numbers.as_ref());
+            println!("Deriving path: m/{}/{}", account, index);
+            
+            let derived_pubkey = extended_pubkey
+                .derive_pub(&secp, &path)
+                .map_err(|e| format!("Derivation error: {}", e))?;
+            
+            let public_key = PublicKey::new(derived_pubkey.public_key);
+            
+            // Generate native SegWit address (P2WPKH)
+            let address = Address::p2wpkh(&public_key, network)
+                .map_err(|e| format!("Address generation error: {}", e))?;
 
-        // Use a different API endpoint for testnet
-        let balance = if network == Network::Testnet {
-            get_testnet_address_balance(&address.to_string()).await?
-        } else {
-            get_address_balance(&address.to_string()).await?
-        };
-        
-        balances.push(AddressBalance {
-            address: address.to_string(),
-            balance: balance,
-            derivation_path: format!("{}/{}", base_path, i), // Using the full path in display
-        });
+            println!("Generated address for m/{}/{}: {}", account, index, address);
+            
+            let balance = if network == Network::Testnet {
+                get_testnet_address_balance(&address.to_string()).await?
+            } else {
+                get_address_balance(&address.to_string()).await?
+            };
+
+            if balance > 0.0 {
+                println!("Found balance of {} BTC at {}", balance, address);
+            }
+            
+            balances.push(AddressBalance {
+                address: address.to_string(),
+                balance,
+                derivation_path: format!("m/{}/{}", account, index),
+            });
+        }
     }
 
     Ok(balances)
 }
 
+// ... [Previous code remains same until balance checking functions] ...
+
 async fn get_testnet_address_balance(address: &str) -> Result<f64, String> {
+    // Try multiple API endpoints with retry logic
+    for attempt in 0..3 {
+        if attempt > 0 {
+            // Exponential backoff: 2s, 4s, 8s
+            let delay = 2u64.pow(attempt as u32);
+            println!("Rate limit hit, waiting {} seconds before retry...", delay);
+            tokio::time::sleep(tokio::time::Duration::from_secs(delay)).await;
+        }
+
+        // Alternate between different API endpoints
+        let result = match attempt % 2 {
+            0 => get_balance_from_blockstream(address).await,
+            1 => get_balance_from_mempool(address).await,
+            _ => unreachable!(),
+        };
+
+        match result {
+            Ok(balance) => return Ok(balance),
+            Err(e) if e.contains("rate limit") || e.contains("exceeded") => {
+                println!("Rate limit error, will retry: {}", e);
+                continue;
+            },
+            Err(e) => return Err(e),
+        }
+    }
+
+    Err("All API attempts failed".to_string())
+}
+
+async fn get_balance_from_blockstream(address: &str) -> Result<f64, String> {
     let url = format!("https://blockstream.info/testnet/api/address/{}", address);
-    println!("Checking balance for address: {} at URL: {}", address, url);
+    println!("Checking balance via Blockstream for address: {}", address);
     
     let response = reqwest::get(&url)
         .await
         .map_err(|e| format!("API request failed: {}", e))?;
+    
+    if !response.status().is_success() {
+        return Err(format!("API error: {}", response.status()));
+    }
     
     let text = response
         .text()
         .await
         .map_err(|e| format!("Failed to get response text: {}", e))?;
     
-    println!("Response from API: {}", text);
+    if text.contains("exceeded") {
+        return Err("Rate limit exceeded".to_string());
+    }
     
     let data: serde_json::Value = serde_json::from_str(&text)
         .map_err(|e| format!("Failed to parse API response: {}", e))?;
-    
-    // Print the full response structure
-    println!("Parsed JSON data: {:#?}", data);
     
     let funded = data["chain_stats"]["funded_txo_sum"]
         .as_u64()
@@ -274,14 +318,38 @@ async fn get_testnet_address_balance(address: &str) -> Result<f64, String> {
         .as_u64()
         .unwrap_or(0);
     
-    println!("Funded amount: {}, Spent amount: {}", funded, spent);
-    
     let balance_satoshis = funded.saturating_sub(spent);
-    let balance_btc = balance_satoshis as f64 / 100_000_000.0;
+    Ok(balance_satoshis as f64 / 100_000_000.0)
+}
+
+async fn get_balance_from_mempool(address: &str) -> Result<f64, String> {
+    let url = format!("https://mempool.space/testnet/api/address/{}", address);
+    println!("Checking balance via Mempool.space for address: {}", address);
     
-    println!("Calculated balance: {} BTC", balance_btc);
+    let response = reqwest::get(&url)
+        .await
+        .map_err(|e| format!("API request failed: {}", e))?;
     
-    Ok(balance_btc)
+    if !response.status().is_success() {
+        return Err(format!("API error: {}", response.status()));
+    }
+
+    let data: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse API response: {}", e))?;
+    
+    // Mempool.space returns the balance directly
+    let balance_satoshis = data["chain_stats"]["funded_txo_sum"]
+        .as_u64()
+        .unwrap_or(0)
+        .saturating_sub(
+            data["chain_stats"]["spent_txo_sum"]
+                .as_u64()
+                .unwrap_or(0)
+        );
+    
+    Ok(balance_satoshis as f64 / 100_000_000.0)
 }
 
 async fn get_address_balance(address: &str) -> Result<f64, String> {

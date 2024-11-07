@@ -1,0 +1,422 @@
+Converted vpub to tpub: tpubDCpP2bUR4GbTZkfizWRozZVuZ2aohedBEzpHzvckRFXvKDWko6kA4T3PdUsFgXL9qtJ8326v52uwxG6HCMkA9fPym6QkiUgjqKyDx1eHAgy
+Using key: tpubDCpP2bUR4GbTZkfizWRozZVuZ2aohedBEzpHzvckRFXvKDWko6kA4T3PdUsFgXL9qtJ8326v52uwxG6HCMkA9fPym6QkiUgjqKyDx1eHAgy
+Checking balance for address: mgGy2VkWEv8EVKdCwnSvqnj4FUxn5JveBm at URL: https://blockstream.info/testnet/api/address/mgGy2VkWEv8EVKdCwnSvqnj4FUxn5JveBm
+Response from API: {"address":"mgGy2VkWEv8EVKdCwnSvqnj4FUxn5JveBm","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mgGy2VkWEv8EVKdCwnSvqnj4FUxn5JveBm"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mgAPEc5aKKycASi3ftM6P7iR57c4nXi64f at URL: https://blockstream.info/testnet/api/address/mgAPEc5aKKycASi3ftM6P7iR57c4nXi64f
+Response from API: {"address":"mgAPEc5aKKycASi3ftM6P7iR57c4nXi64f","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mgAPEc5aKKycASi3ftM6P7iR57c4nXi64f"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mzWe2a4zhQi5Wa1Wj4X2KKzPvyR2aTnT7M at URL: https://blockstream.info/testnet/api/address/mzWe2a4zhQi5Wa1Wj4X2KKzPvyR2aTnT7M
+Response from API: {"address":"mzWe2a4zhQi5Wa1Wj4X2KKzPvyR2aTnT7M","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mzWe2a4zhQi5Wa1Wj4X2KKzPvyR2aTnT7M"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: n4pyibumT8tCspmUHsNFzXGTxHiPjTv9Ui at URL: https://blockstream.info/testnet/api/address/n4pyibumT8tCspmUHsNFzXGTxHiPjTv9Ui
+Response from API: {"address":"n4pyibumT8tCspmUHsNFzXGTxHiPjTv9Ui","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("n4pyibumT8tCspmUHsNFzXGTxHiPjTv9Ui"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mwHaGwBRmAFffGzNjeMj25QEbRKh53eU5g at URL: https://blockstream.info/testnet/api/address/mwHaGwBRmAFffGzNjeMj25QEbRKh53eU5g
+Response from API: {"address":"mwHaGwBRmAFffGzNjeMj25QEbRKh53eU5g","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mwHaGwBRmAFffGzNjeMj25QEbRKh53eU5g"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: msywKCcGXqcmPvuUfcuc3tyvpiqE1qcUFJ at URL: https://blockstream.info/testnet/api/address/msywKCcGXqcmPvuUfcuc3tyvpiqE1qcUFJ
+Response from API: {"address":"msywKCcGXqcmPvuUfcuc3tyvpiqE1qcUFJ","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("msywKCcGXqcmPvuUfcuc3tyvpiqE1qcUFJ"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mminjEYcsXxUnNuHC3N5xPocDkU6j4axGN at URL: https://blockstream.info/testnet/api/address/mminjEYcsXxUnNuHC3N5xPocDkU6j4axGN
+Response from API: {"address":"mminjEYcsXxUnNuHC3N5xPocDkU6j4axGN","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mminjEYcsXxUnNuHC3N5xPocDkU6j4axGN"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mmyJ3phNbkqKcrkvxMh3AfzK6QP96CaDBd at URL: https://blockstream.info/testnet/api/address/mmyJ3phNbkqKcrkvxMh3AfzK6QP96CaDBd
+Response from API: {"address":"mmyJ3phNbkqKcrkvxMh3AfzK6QP96CaDBd","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mmyJ3phNbkqKcrkvxMh3AfzK6QP96CaDBd"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: n4m7egdwogZvDRxdF6itnFvP7rVQqyyEjx at URL: https://blockstream.info/testnet/api/address/n4m7egdwogZvDRxdF6itnFvP7rVQqyyEjx
+Response from API: {"address":"n4m7egdwogZvDRxdF6itnFvP7rVQqyyEjx","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("n4m7egdwogZvDRxdF6itnFvP7rVQqyyEjx"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mq3eUjjzaynLMvpkoguZgcjv4qNXwn1jqM at URL: https://blockstream.info/testnet/api/address/mq3eUjjzaynLMvpkoguZgcjv4qNXwn1jqM
+Response from API: {"address":"mq3eUjjzaynLMvpkoguZgcjv4qNXwn1jqM","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mq3eUjjzaynLMvpkoguZgcjv4qNXwn1jqM"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: n2Eb5hLPa82bhSDNmhDJC8YkPshpKsfm9D at URL: https://blockstream.info/testnet/api/address/n2Eb5hLPa82bhSDNmhDJC8YkPshpKsfm9D
+Response from API: {"address":"n2Eb5hLPa82bhSDNmhDJC8YkPshpKsfm9D","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("n2Eb5hLPa82bhSDNmhDJC8YkPshpKsfm9D"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: miC4jKsmHrjG6pBndQ6i6rXE1rkDkj7XVq at URL: https://blockstream.info/testnet/api/address/miC4jKsmHrjG6pBndQ6i6rXE1rkDkj7XVq
+Response from API: {"address":"miC4jKsmHrjG6pBndQ6i6rXE1rkDkj7XVq","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("miC4jKsmHrjG6pBndQ6i6rXE1rkDkj7XVq"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mja1MNb1Hs6j51wZU4PtfeTQqPQCu7sdUJ at URL: https://blockstream.info/testnet/api/address/mja1MNb1Hs6j51wZU4PtfeTQqPQCu7sdUJ
+Response from API: {"address":"mja1MNb1Hs6j51wZU4PtfeTQqPQCu7sdUJ","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mja1MNb1Hs6j51wZU4PtfeTQqPQCu7sdUJ"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mjmM8jpxffa9rCqHmob4uSdpuBntZUXP4B at URL: https://blockstream.info/testnet/api/address/mjmM8jpxffa9rCqHmob4uSdpuBntZUXP4B
+Response from API: {"address":"mjmM8jpxffa9rCqHmob4uSdpuBntZUXP4B","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mjmM8jpxffa9rCqHmob4uSdpuBntZUXP4B"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mvr8KpQcSPQk5dP6yzigJ9zcaJbGfMEwzw at URL: https://blockstream.info/testnet/api/address/mvr8KpQcSPQk5dP6yzigJ9zcaJbGfMEwzw
+Response from API: {"address":"mvr8KpQcSPQk5dP6yzigJ9zcaJbGfMEwzw","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mvr8KpQcSPQk5dP6yzigJ9zcaJbGfMEwzw"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mfuYPhGKYNMJGvhgfndNyRz6fitcStXvBy at URL: https://blockstream.info/testnet/api/address/mfuYPhGKYNMJGvhgfndNyRz6fitcStXvBy
+Response from API: {"address":"mfuYPhGKYNMJGvhgfndNyRz6fitcStXvBy","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mfuYPhGKYNMJGvhgfndNyRz6fitcStXvBy"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mmzbm9up6XQUJaXdWc1NTh1E8cWS6xnjFz at URL: https://blockstream.info/testnet/api/address/mmzbm9up6XQUJaXdWc1NTh1E8cWS6xnjFz
+Response from API: {"address":"mmzbm9up6XQUJaXdWc1NTh1E8cWS6xnjFz","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mmzbm9up6XQUJaXdWc1NTh1E8cWS6xnjFz"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mtEYQu8zctdsqH1USYi8WChFuNgKbbYU7N at URL: https://blockstream.info/testnet/api/address/mtEYQu8zctdsqH1USYi8WChFuNgKbbYU7N
+Response from API: {"address":"mtEYQu8zctdsqH1USYi8WChFuNgKbbYU7N","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mtEYQu8zctdsqH1USYi8WChFuNgKbbYU7N"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mxQmyg86RHaDpKAtK2BfwwzXpBdWdhr3hZ at URL: https://blockstream.info/testnet/api/address/mxQmyg86RHaDpKAtK2BfwwzXpBdWdhr3hZ
+Response from API: {"address":"mxQmyg86RHaDpKAtK2BfwwzXpBdWdhr3hZ","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mxQmyg86RHaDpKAtK2BfwwzXpBdWdhr3hZ"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
+Checking balance for address: mnMNexSCkqxQHSjEFJcewrnK8nRbuxa51Z at URL: https://blockstream.info/testnet/api/address/mnMNexSCkqxQHSjEFJcewrnK8nRbuxa51Z
+Response from API: {"address":"mnMNexSCkqxQHSjEFJcewrnK8nRbuxa51Z","chain_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0},"mempool_stats":{"funded_txo_count":0,"funded_txo_sum":0,"spent_txo_count":0,"spent_txo_sum":0,"tx_count":0}}
+Parsed JSON data: Object {
+    "address": String("mnMNexSCkqxQHSjEFJcewrnK8nRbuxa51Z"),
+    "chain_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+    "mempool_stats": Object {
+        "funded_txo_count": Number(0),
+        "funded_txo_sum": Number(0),
+        "spent_txo_count": Number(0),
+        "spent_txo_sum": Number(0),
+        "tx_count": Number(0),
+    },
+}
+Funded amount: 0, Spent amount: 0
+Calculated balance: 0 BTC
