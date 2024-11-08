@@ -1,5 +1,5 @@
 use bitcoin::{
-    base58, bip32::{ChildNumber, DerivationPath, ExtendedPubKey}, hashes::{sha256, Hash as BitcoinHash}, Address, Network,
+    base58, bip32::{ChildNumber, DerivationPath, ExtendedPubKey}, hashes::{sha256, Hash}, Address, Network,
     PublicKey, secp256k1::Secp256k1,
 };
 use std::str::FromStr;
@@ -87,28 +87,29 @@ pub async fn check_balances(
 
 fn parse_xpub(xpub: &str) -> Result<(Network, String), String> {
     if xpub.starts_with("vpub") {
-        let decoded = base58::from_check(xpub)
+        let decoded = base58::decode(xpub)
             .map_err(|e| format!("Failed to decode vpub: {}", e))?;
-
+        
         if decoded.len() < 78 {
             return Err("Invalid extended public key length".to_string());
         }
 
         // Extract the key material (everything except version and checksum)
-        let key_material = &decoded[4..decoded.len() - 4];
-
+        let key_material = &decoded[4..decoded.len()-4];
+        
         // Create new vector with tpub version bytes
         let mut modified = Vec::with_capacity(78);
         modified.extend_from_slice(&[0x04, 0x35, 0x87, 0xCF]); // tpub version
         modified.extend_from_slice(key_material);
         
         // Calculate double SHA256 checksum
-        let hash1 = sha256::Hash::hash(&modified);
-        let hash2 = sha256::Hash::hash(hash1.as_ref());
-        let checksum = hash2[..4].to_vec(); // checksum now owns the data
-        modified.extend_from_slice(&checksum);
-
-        let tpub = base58::encode_check(&modified);
+        let hash1 = sha256::Hash::hash(&modified[..modified.len()]);
+        let hash2 = sha256::Hash::hash(&hash1[..]);
+        
+        // Add checksum
+        modified.extend_from_slice(&hash2[0..4]);
+        
+        let tpub = base58::encode(&modified);
 
         Ok((Network::Testnet, tpub))
     } else if xpub.starts_with("xpub") {
