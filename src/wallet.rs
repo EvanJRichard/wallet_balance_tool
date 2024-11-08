@@ -1,5 +1,5 @@
 use bitcoin::{
-    base58, bip32::{ChildNumber, DerivationPath, ExtendedPubKey}, hashes::{sha256, Hash}, Address, Network,
+    base58, bip32::{DerivationPath, ExtendedPubKey}, hashes::{sha256, Hash}, Address, Network,
     PublicKey, secp256k1::Secp256k1,
 };
 use std::str::FromStr;

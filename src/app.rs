@@ -1,8 +1,8 @@
 use iced::{
-    alignment, executor, Alignment, Application, Color, Command, Element, Length, Theme,
+    alignment, Alignment, Application, Color, Command, Element, Length, Theme,
 };
 use iced::widget::{
-    button, column, container, progress_bar, row, scrollable, text, text_input, Button, Column,
+    Button, Column,
     Container, ProgressBar, Row, Scrollable, Text, TextInput,
 };
 use crate::executor::CustomExecutor;
